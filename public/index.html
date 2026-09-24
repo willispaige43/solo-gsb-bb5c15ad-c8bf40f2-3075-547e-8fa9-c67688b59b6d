@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>齿轮组选配 · 手摇机械试制</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --ink: #1f2933;
+    --muted: #66737f;
+    --line: #d8dde3;
+    --brand: #1d6f8c;
+    --brand-dark: #155a72;
+    --ok: #1e7d46;
+    --ok-bg: #e7f6ec;
+    --warn: #9a6700;
+    --warn-bg: #fff4d6;
+    --err: #b42318;
+    --err-bg: #fdecea;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  header h1 { font-size: 24px; margin: 0 0 4px; }
+  header p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 { font-size: 16px; margin: 0 0 14px; }
+  .grid { display: flex; gap: 16px; flex-wrap: wrap; }
+  .field { flex: 1 1 220px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input[type=text], input[type=number] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: var(--mono);
+  }
+  input:focus { outline: 2px solid rgba(29,111,140,.25); border-color: var(--brand); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+  table.gears { width: 100%; border-collapse: collapse; }
+  table.gears th {
+    text-align: left; font-size: 12px; color: var(--muted);
+    font-weight: 600; padding: 0 8px 8px;
+  }
+  table.gears td { padding: 0 8px 10px; }
+  table.gears input { padding: 6px 8px; }
+  .col-idx { width: 36px; color: var(--muted); font-size: 13px; }
+  .col-id { width: 140px; }
+  .col-op { width: 44px; }
+  .btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .btn:hover { background: #f0f2f4; }
+  .btn-primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+    padding: 9px 22px;
+    font-size: 15px;
+  }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-primary:disabled { opacity: .6; cursor: wait; }
+  .icon-btn {
+    border: none; background: none; color: var(--err);
+    cursor: pointer; font-size: 16px; padding: 4px;
+  }
+  .actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+
+  .banner { border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 14px; }
+  .banner.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #bfe3cb; }
+  .banner.none { background: var(--err-bg); color: var(--err); border: 1px solid #f3c5bf; }
+  .banner.info { background: var(--warn-bg); color: var(--warn); border: 1px solid #f0d99a; }
+  .banner .meta { color: var(--muted); font-size: 12px; margin-top:4px; }
+
+  .sol {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .sol.best { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset; }
+  .sol-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+  }
+  .sol-title { font-weight: 600; }
+  .rank {
+    display: inline-block; background: var(--brand); color: #fff;
+    border-radius: 999px; font-size: 12px; padding: 1px 10px; margin-right: 8px;
+  }
+  .badge {
+    font-size: 12px; border-radius: 999px; padding: 1px 10px;
+    background: var(--ok-bg); color: var(--ok); border: 1px solid #bfe3cb;
+  }
+  .stage-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 14px;
+    padding: 6px 0;
+  }
+  .stage-label { color: var(--muted); font-size: 12px; width: 48px; font-family: inherit; }
+  .gear-tag {
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 2px 8px; background: #fafbfc;
+  }
+  .gear-tag b { color: var(--brand); }
+  .arrow { color: var(--muted); }
+  .ratio-note { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+  .sol-foot {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    border-top: 1px dashed var(--line);
+    margin-top: 8px; padding-top: 8px; font-size: 13px;
+  }
+  .sol-foot .k { color: var(--muted); margin-right: 4px; }
+  .sol-foot .v { font-family: var(--mono); }
+  .err-pill { font-family: var(--mono); color: var(--ok); font-weight: 600; }
+  .more-note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>齿轮组选配</h1>
+    <p>手摇机械装置试制辅助：在 1～3 级定轴传动内搜索满足目标输出转速比的配齿方案，全程精确分数计算。</p>
+  </header>
+
+  <section class="card">
+    <h2>设计目标</h2>
+    <div class="grid">
+      <div class="field">
+        <label for="target">目标输出转速比（输出 / 输入）</label>
+        <input id="target" type="text" value="1/8" placeholder="如 1/8、1:8、0.125" />
+        <div class="hint">支持分数 a/b、比 a:b 或小数，必须为正数；&gt;1 表示增速。</div>
+      </div>
+      <div class="field">
+        <label for="tolerance">允许相对误差（百分数）</label>
+        <input id="tolerance" type="text" value="1" placeholder="如 1 或 1%" />
+        <div class="hint">输入框按百分数解析：1 或 1% 均表示 1%（0.01），最大 100%。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>现有齿轮（2～12 枚，编号唯一）</h2>
+    <table class="gears">
+      <thead>
+        <tr><th class="col-idx">#</th><th class="col-id">唯一编号</th><th>齿数（正整数）</th><th class="col-op"></th></tr>
+      </thead>
+      <tbody id="gearRows"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn" id="addGear" type="button">＋ 添加齿轮</button>
+      <span class="hint" id="gearCount"></span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="runSearch" type="button">开始选配</button>
+    </div>
+  </section>
+
+  <section id="results"></section>
+
+  <footer>传动比 = ∏(主动轮齿数 / 从动轮齿数)；同一枚齿轮不会在方案中重复使用。</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  const tbody = $('gearRows');
+  const MIN = 2, MAX = 12;
+
+  let defaultGears = [
+    { id: 'G1', teeth: 8 },
+    { id: 'G2', teeth: 12 },
+    { id: 'G3', teeth: 16 },
+    { id: 'G4', teeth: 24 },
+    { id: 'G5', teeth: 32 },
+    { id: 'G6', teeth: 40 },
+  ];
+
+  function renderRows() {
+    tbody.innerHTML = '';
+    defaultGears.forEach((g) => addRow(g.id, g.teeth));
+    updateCount();
+  }
+
+  function addRow(id, teeth) {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="col-idx"></td>' +
+      '<td class="col-id"><input class="g-id" type="text" /></td>' +
+      '<td><input class="g-teeth" type="number" min="1" step="1" /></td>' +
+      '<td class="col-op"><button class="icon-btn" type="button" title="删除">✕</button></td>';
+    tr.querySelector('.g-id').value = id == null ? '' : id;
+    tr.querySelector('.g-teeth').value = teeth == null ? '' : teeth;
+    tr.querySelector('.icon-btn').addEventListener('click', () => {
+      if (tbody.rows.length <= MIN) return;
+      tr.remove();
+      updateCount();
+    });
+    tbody.appendChild(tr);
+    updateCount();
+  }
+
+  function updateCount() {
+    [...tbody.rows].forEach((tr, i) => { tr.querySelector('.col-idx').textContent = i + 1; });
+    $('gearCount').textContent = `当前 ${tbody.rows.length} 枚（允许 ${MIN}～${MAX} 枚）`;
+    $('addGear').disabled = tbody.rows.length >= MAX;
+  }
+
+  $('addGear').addEventListener('click', () => {
+    if (tbody.rows.length < MAX) addRow('', '');
+  });
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function collectGears() {
+    const gears = [];
+    const ids = new Set();
+    for (let i = 0; i < tbody.rows.length; i++) {
+      const id = tbody.rows[i].querySelector('.g-id').value.trim();
+      const teethRaw = tbody.rows[i].querySelector('.g-teeth').value.trim();
+      if (!id) throw new Error(`第 ${i + 1} 枚齿轮缺少编号`);
+      if (ids.has(id)) throw new Error(`齿轮编号重复：${id}`);
+      ids.add(id);
+      if (!/^\d+$/.test(teethRaw)) throw new Error(`齿轮 ${id} 的齿数必须为正整数`);
+      const teeth = Number(teethRaw);
+      if (teeth < 1) throw new Error(`齿轮 ${id} 的齿数必须 ≥ 1`);
+      gears.push({ id, teeth });
+    }
+    if (gears.length < MIN || gears.length > MAX) {
+      throw new Error(`齿轮数量必须为 ${MIN}～${MAX} 枚`);
+    }
+    return gears;
+  }
+
+  function stageHtml(s, index) {
+    return (
+      '<div class="stage-row">' +
+      '<span class="stage-label">第 ' + (index + 1) + ' 级</span>' +
+      '<span class="gear-tag">主动 <b>' + esc(s.driver.id) + '</b> · ' + s.driver.teeth + ' 齿</span>' +
+      '<span class="arrow">→</span>' +
+      '<span class="gear-tag">从动 <b>' + esc(s.driven.id) + '</b> · ' + s.driven.teeth + ' 齿</span>' +
+      '<span class="ratio-note">本级传动比 ' + esc(s.stageRatioText) + ' ≈ ' + esc(s.stageRatio.n / s.stageRatio.d) + '</span>' +
+      '</div>'
+    );
+  }
+
+  function solutionHtml(sol, rank, isClosest) {
+    const head = isClosest
+      ? '<div class="sol-head"><span class="sol-title">最接近但未达标方案（仅供参考）</span></div>'
+      : '<div class="sol-head"><span class="sol-title"><span class="rank">#' + rank + '</span>' +
+        sol.stagesCount + ' 级传动</span>' +
+        '<span class="err-pill">相对误差 ' + esc(sol.errorPercent) + '%</span></div>';
+
+    let body = '<div class="sol' + (rank === 1 ? ' best' : '') + '">' + head;
+    sol.stages.forEach((s, i) => { body += stageHtml(s, i); });
+    body +=
+      '<div class="sol-foot">' +
+      '<span><span class="k">实际转速比：</span><span class="v">' + esc(sol.actualText) + ' ≈ ' + esc(sol.actualDecimal) + '</span></span>' +
+      '<span><span class="k">相对误差：</span><span class="v">' + esc(sol.errorText) + ' = ' + esc(sol.errorPercent) + '%</span></span>' +
+      '</div></div>';
+    return body;
+  }
+
+  function render(data) {
+    const box = $('results');
+    let html = '';
+
+    if (data.totalFeasible > 0) {
+      html += '<div class="banner ok"><b>找到 ' + data.totalFeasible + ' 个误差达标方案</b>' +
+        '（已按级数最少、误差最小、编号序列排序' +
+        (data.totalFeasible > data.resultLimit ? `，仅展示前 ${data.resultLimit} 个` : '') + '）' +
+        '<div class="meta">目标 ' + esc(data.targetText) + '，允许误差 ' + esc(data.tolerancePercent) +
+        '%；枚举评估 ' + data.evaluated + ' 个方案，耗时 ' + data.elapsedMs + ' ms</div></div>';
+      data.solutions.forEach((s, i) => { html += solutionHtml(s, i + 1, false); });
+      if (data.totalFeasible > data.resultLimit) {
+        html += '<div class="more-note">其余 ' + (data.totalFeasible - data.resultLimit) + ' 个达标方案未展示，可缩小误差或更换齿轮集。</div>';
+      }
+    } else {
+      html += '<div class="banner none"><b>无误差达标方案</b>：在 1～3 级传动、齿轮不重复使用的约束下，' +
+        '没有方案能在允许误差 ' + esc(data.tolerancePercent) + '% 内达到目标转速比 ' + esc(data.targetText) + '。' +
+        '<div class="meta">枚举评估 ' + data.evaluated + ' 个方案，耗时 ' + data.elapsedMs + ' ms</div></div>';
+      if (data.closest) {
+        html += '<div class="banner info">下面给出误差最小的参考方案（<b>不满足要求</b>，不可直接采用）：</div>';
+        html += solutionHtml(data.closest, null, true);
+      }
+    }
+    box.innerHTML = html;
+  }
+
+  function renderError(msg) {
+    $('results').innerHTML = '<div class="banner none"><b>输入有误：</b>' + esc(msg) + '</div>';
+  }
+
+  $('runSearch').addEventListener('click', async () => {
+    let gears;
+    try {
+      gears = collectGears();
+    } catch (e) { renderError(e.message); return; }
+
+    const payload = {
+      target: $('target').value.trim(),
+      tolerance: $('tolerance').value.trim(),
+      gears,
+    };
+
+    const btn = $('runSearch');
+    btn.disabled = true;
+    btn.textContent = '搜索中…';
+    try {
+      const resp = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        renderError(data.error || '请求失败');
+      } else {
+        render(data);
+      }
+    } catch (e) {
+      renderError('无法连接服务器：' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '开始选配';
+    }
+  });
+
+  renderRows();
+})();
+</script>
+</body>
+</html>

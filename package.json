@@ -1,0 +1,16 @@
+{
+  "name": "gear-train-picker",
+  "version": "1.0.0",
+  "description": "手摇机械装置试制用齿轮组选配 Web 应用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/verify.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

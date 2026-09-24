@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    image: gear-train-picker:latest
+    container_name: gear-train-picker
+    ports:
+      # 宿主机端口:容器端口；修改左侧端口即可避免冲突
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
